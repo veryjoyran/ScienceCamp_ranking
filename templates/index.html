@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+    <title>2024年东北大学科学营常规赛榜单</title>
+    <style>
+        body {
+            background-image: url('/static/background.jpg'); /* 设置背景图片 */
+            background-size: cover; /* 使背景图片覆盖整个页面 */
+            background-position: center; /* 背景图片居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+            font-family: Arial, sans-serif; /* 设置默认字体 */
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.9); /* 表格背景颜色为白色，透明度90% */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 添加阴影使表格更突出 */
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        td.editable {
+            cursor: pointer;
+        }
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center; /* 标题居中对齐 */
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-size: 2.8em; /* 设置字体大小 */
+            padding-left: 150px; /* 添加左边距使标题稍微向右移动 */
+            margin-top: 70px; /* 添加上边距 */
+            margin-bottom: 40px; /* 添加下边距 */
+        }
+    </style>
+</head>
+<body>
+    <h1>2024年东北大学科学营常规赛最终用时榜单</h1>
+    <table>
+        <tr>
+            <th>排名</th>
+            <th>组名</th>
+            <th>完成时间</th>
+            <th>加罚时间</th>
+            <th>最终时间</th>
+        </tr>
+        {% for entry in leaderboard %}
+        <tr>
+            <td>{{ entry.排名 }}</td>
+            <td>{{ entry.组名 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="completion">{{ entry.完成时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="penalty">{{ entry.加罚时间 }}</td>
+            <td>{{ entry.最终时间 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <script>
+        document.querySelectorAll('.editable').forEach(function(cell) {
+            cell.addEventListener('click', function() {
+                var originalText = this.textContent;
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.value = originalText;
+                this.textContent = '';
+                this.appendChild(input);
+                input.focus();
+
+                input.addEventListener('blur', () => {
+                    var newValue = input.value;
+                    var groupName = this.getAttribute('data-group_name');
+                    var type = this.getAttribute('data-type');
+                    this.removeChild(input);
+                    this.textContent = newValue;
+
+                    var completionTime = type === 'completion' ? newValue : this.parentNode.querySelector('[data-type="completion"]').textContent;
+                    var penaltyTime = type === 'penalty' ? newValue : this.parentNode.querySelector('[data-type="penalty"]').textContent;
+
+                    fetch('/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ group_name: groupName, completion_time: completionTime, penalty_time: penaltyTime }),
+                    }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('更新成功');
+                            location.reload(); // 刷新页面以更新最终时间和排名
+                        } else {
+                            console.error('更新失败');
+                        }
+                    });
+                });
+
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        input.blur();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
