@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>2024年东北大学科学营常规赛榜单</title>
+    <title>2024年东北大学科学营智能车主赛榜单</title>
     <style>
         body {
             background-image: url('/static/background.jpg'); /* 设置背景图片 */
@@ -14,7 +14,7 @@
             border-collapse: collapse;
             width: 80%;
             margin: 20px auto;
-            background-color: rgba(255, 255, 255, 0.9); /* 表格背景颜色为白色，透明度90% */
+            background-color: rgba(255, 235, 205, 0.9); /* 表格背景颜色为漂白的杏仁，透明度90% */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 添加阴影使表格更突出 */
         }
         th, td {
@@ -23,7 +23,7 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #f0ffff;
         }
         td.editable {
             cursor: pointer;
@@ -37,29 +37,45 @@
             color: white;
             text-shadow: 2px 2px 4px #000000;
             font-size: 2.8em; /* 设置字体大小 */
-            padding-left: 150px; /* 添加左边距使标题稍微向右移动 */
-            margin-top: 70px; /* 添加上边距 */
-            margin-bottom: 40px; /* 添加下边距 */
+            padding-left: 130px; /* 添加左边距使标题稍微向右移动 */
+            margin-top: 110px; /* 添加上边距 */
+            margin-bottom: 20px; /* 添加下边距 */
         }
     </style>
 </head>
 <body>
-    <h1>2024年东北大学科学营常规赛最终用时榜单</h1>
+    <h1>2024年青少年高校科学营东北大学分营智能车主赛用时榜单</h1>
     <table>
         <tr>
-            <th>排名</th>
-            <th>组名</th>
+            <th rowspan="2">排名</th>
+            <th rowspan="2">组名</th>
+            <th colspan="4">常规赛</th>
+            <th colspan="4">开放赛</th>
+            <th rowspan="2">总完成时间</th>
+        </tr>
+        <tr>
+            <th>基础完成时间</th>
+            <th>任务加罚时间</th>
+            <th>重试加罚时间</th>
             <th>完成时间</th>
-            <th>加罚时间</th>
-            <th>最终时间</th>
+            <th>基础完成时间</th>
+            <th>任务加罚时间</th>
+            <th>重试加罚时间</th>
+            <th>完成时间</th>
         </tr>
         {% for entry in leaderboard %}
         <tr>
             <td>{{ entry.排名 }}</td>
             <td>{{ entry.组名 }}</td>
-            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="completion">{{ entry.完成时间 }}</td>
-            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="penalty">{{ entry.加罚时间 }}</td>
-            <td>{{ entry.最终时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="norm_base">{{ entry.常规赛基础完成时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="norm_task">{{ entry.常规赛任务加罚时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="norm_retry">{{ entry.常规赛重试加罚时间 }}</td>
+            <td>{{ entry.常规赛完成时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="open_base">{{ entry.开放赛基础完成时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="open_task">{{ entry.开放赛任务加罚时间 }}</td>
+            <td class="editable" data-group_name="{{ entry.组名 }}" data-type="open_retry">{{ entry.开放赛重试加罚时间 }}</td>
+            <td>{{ entry.开放赛完成时间 }}</td>
+            <td>{{ entry.总完成时间 }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -81,15 +97,19 @@
                     this.removeChild(input);
                     this.textContent = newValue;
 
-                    var completionTime = type === 'completion' ? newValue : this.parentNode.querySelector('[data-type="completion"]').textContent;
-                    var penaltyTime = type === 'penalty' ? newValue : this.parentNode.querySelector('[data-type="penalty"]').textContent;
+                    var normBaseTime = type === 'norm_base' ? newValue : this.parentNode.querySelector('[data-type="norm_base"]').textContent;
+                    var normTaskPenalty = type === 'norm_task' ? newValue : this.parentNode.querySelector('[data-type="norm_task"]').textContent;
+                    var normRetryPenalty = type === 'norm_retry' ? newValue : this.parentNode.querySelector('[data-type="norm_retry"]').textContent;
+                    var openBaseTime = type === 'open_base' ? newValue : this.parentNode.querySelector('[data-type="open_base"]').textContent;
+                    var openTaskPenalty = type === 'open_task' ? newValue : this.parentNode.querySelector('[data-type="open_task"]').textContent;
+                    var openRetryPenalty = type === 'open_retry' ? newValue : this.parentNode.querySelector('[data-type="open_retry"]').textContent;
 
                     fetch('/update', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ group_name: groupName, completion_time: completionTime, penalty_time: penaltyTime }),
+                        body: JSON.stringify({ group_name: groupName, norm_base_time: normBaseTime, norm_task_penalty: normTaskPenalty, norm_retry_penalty: normRetryPenalty, open_base_time: openBaseTime, open_task_penalty: openTaskPenalty, open_retry_penalty: openRetryPenalty }),
                     }).then(response => response.json())
                     .then(data => {
                         if (data.success) {
